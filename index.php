@@ -1,34 +1,51 @@
 <?php
-session_start(); // Start or resume session
+session_start();
 
 // Initialize tasks array in session if not already set
 if (!isset($_SESSION['tasks'])) {
     $_SESSION['tasks'] = [];
 }
 
+// Feedback message initialization
+$feedback = "";
+
 // Handle form submissions (create, update, delete)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if ($_POST['action'] == 'create') {
-        $task = $_POST['task'];
+    $action = $_POST['action'];
+
+    if ($action == 'create') {
+        $task = trim($_POST['task']);
         if (!empty($task)) {
-            $_SESSION['tasks'][] = $task;
+            $_SESSION['tasks'][] = htmlspecialchars($task, ENT_QUOTES, 'UTF-8');
+            $feedback = "Task added successfully!";
+        } else {
+            $feedback = "Task cannot be empty!";
         }
-    } elseif ($_POST['action'] == 'delete') {
-        $index = $_POST['index'];
-        // Check if index exists before deleting
-        if (isset($_SESSION['tasks'][$index])) {
-            unset($_SESSION['tasks'][$index]);
-            // Reset array keys to maintain sequential numbering
-            $_SESSION['tasks'] = array_values($_SESSION['tasks']);
+    } elseif ($action == 'delete') {
+        $index = filter_var($_POST['index'], FILTER_VALIDATE_INT);
+        if ($index !== false && isset($_SESSION['tasks'][$index])) {
+            array_splice($_SESSION['tasks'], $index, 1);
+            $feedback = "Task deleted successfully!";
+        } else {
+            $feedback = "Task not found or invalid index!";
         }
-    } elseif ($_POST['action'] == 'update') {
-        $index = $_POST['index'];
-        $task = $_POST['task'];
-        // Check if index exists before updating
-        if (isset($_SESSION['tasks'][$index]) && !empty($task)) {
-            $_SESSION['tasks'][$index] = $task;
+    } elseif ($action == 'update') {
+        $index = filter_var($_POST['index'], FILTER_VALIDATE_INT);
+        $task = trim($_POST['task']);
+        if ($index !== false && isset($_SESSION['tasks'][$index]) && !empty($task)) {
+            $_SESSION['tasks'][$index] = htmlspecialchars($task, ENT_QUOTES, 'UTF-8');
+            $feedback = "Task updated successfully!";
+        } else {
+            $feedback = "Invalid update request!";
         }
     }
+
+    // Store feedback message in session
+    $_SESSION['feedback'] = $feedback;
+
+    // Redirect back to index.php
+    header('Location: index.php');
+    exit();
 }
 ?>
 
@@ -46,43 +63,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <img src="images/mario_logo.png" alt="Mario Logo">
         </div>
         <ul>
-            <li><a href="index.html#overview">Overview</a></li>
-            <li><a href="index.html#features">Features</a></li>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#features">Features</a></li>
             <li><a href="home.html">Home</a></li>
         </ul>
     </nav>
 
-    <center>
+    <header>
         <h1>Mario To-do App</h1>
         <p>Level up your task management!</p>
-    </center>        
+    </header>
 
-    <main class="container">
-        <form action="index.php" method="POST">
-            <input type="text" name="task" placeholder="New task...">
-            <input type="hidden" name="action" value="create">
-            <button type="submit">Add Task</button>
-        </form>
+    <main>
+        <section id="overview" class="container">
+            <h2>About the App</h2>
+            <p>Welcome to the Mario To-do App! Manage your tasks with the excitement of a Mario adventure.</p>
+        </section>
 
-        <ul>
-            <?php foreach ($_SESSION['tasks'] as $index => $task): ?>
-                <li>
-                    <form action="index.php" method="POST" style="display:inline;">
-                        <input type="text" name="task" value="<?php echo htmlspecialchars($task); ?>">
-                        <input type="hidden" name="action" value="update">
-                        <input type="hidden" name="index" value="<?php echo $index; ?>">
-                        <button type="submit">Update</button>
-                    </form>
-                    <form action="index.php" method="POST" style="display:inline;">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="index" value="<?php echo $index; ?>">
-                        <button type="submit">Delete</button>
-                    </form>
-                    <a href="display_task.php?index=<?php echo $index; ?>">Details</a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
+        <section id="features" class="container">
+            <h2>Features</h2>
+            <div class="feature-container">
+                <div class="feature">
+                    <img src="images/feature1.png" alt="Create and manage tasks easily">
+                    <p>Create and manage your tasks easily with an intuitive interface.</p>
+                </div>
+                <div class="feature">
+                    <img src="images/feature2.png" alt="Bright Mario-themed design">
+                    <p>Enjoy a bright Mario-themed design that makes task management fun and engaging.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="call-to-action" class="container">
+            <button onclick="navigateToHome()" aria-label="Start using the app">Start Using the App</button>
+        </section>
+
+        <section id="tasks" class="container">
+            <?php if (isset($_SESSION['feedback'])): ?>
+                <p class="feedback"><?php echo htmlspecialchars($_SESSION['feedback'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <?php unset($_SESSION['feedback']); ?>
+            <?php endif; ?>
+
+            <form action="index.php" method="POST">
+                <input type="text" name="task" placeholder="New task..." required>
+                <input type="hidden" name="action" value="create">
+                <button type="submit">Add Task</button>
+            </form>
+
+            <ul>
+                <?php foreach ($_SESSION['tasks'] as $index => $task): ?>
+                    <li>
+                        <form action="index.php" method="POST" style="display:inline;">
+                            <input type="text" name="task" value="<?php echo htmlspecialchars($task, ENT_QUOTES, 'UTF-8'); ?>" required>
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="index" value="<?php echo $index; ?>">
+                            <button type="submit">Update</button>
+                        </form>
+                        <form action="index.php" method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="index" value="<?php echo $index; ?>">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
     </main>
 
+    <script>
+        function navigateToHome() {
+            window.location.href = 'home.html';
+        }
+    </script>
 </body>
 </html>
