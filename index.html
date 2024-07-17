@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario To-do App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="images/mario_logo.png" alt="Mario Logo">
+        </div>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="home.html">Home</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Mario To-do App</h1>
+        <p>Level up your task management!</p>
+    </header>
+
+    <main>
+        <section id="overview" class="container">
+            <h2>About the App</h2>
+            <p>Welcome to the Mario To-do App! Manage your tasks with the excitement of a Mario adventure.</p>
+        </section>
+
+        <section id="features" class="container">
+            <h2>Features</h2>
+            <div class="feature-container">
+                <div class="feature">
+                    <img src="images/feature1.png" alt="Feature 1">
+                    <p>Create and manage your tasks easily.</p>
+                </div>
+                <div class="feature">
+                    <img src="images/feature2.png" alt="Feature 2">
+                    <p>Bright Mario-themed design.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="call-to-action" class="container">
+            <button onclick="navigateToHome()">Start Using the App</button>
+        </section>
+    </main>
+
+    <script>
+        function navigateToHome() {
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>
